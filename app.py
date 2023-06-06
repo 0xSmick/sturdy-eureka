@@ -18,18 +18,23 @@ from langchain.agents.agent_toolkits import (
 )
 
 api_key = st.text_input('Input your OpenAI API key here')
+option = st.selectbox('Which document would you like to use?', [
+                      'Binance Filing', 'Coinbase Filing'])
+
+documents = {'Binance Filing': ['sec.pdf', 'a filing from the SEC against Binance'], 'Coinbase Filing': [
+    'coinbase.pdf', 'a filing from the SEC against Coinbase']}
 
 if api_key:
     os.environ['OPENAI_API_KEY'] = api_key
     llm = OpenAI(temperature=0, verbose=True)
-    loader = PyPDFLoader('sec.pdf')
+    loader = PyPDFLoader(documents[option][0])
     pages = loader.load_and_split()
     store = Chroma.from_documents(pages, collection_name='sec-filing')
 
     # Create vectorstore info object - metadata repo?
     vectorstore_info = VectorStoreInfo(
-        name="sec-filing",
-        description="an SEC filing against binance as a pdf",
+        name="filing",
+        description=documents[option][1],
         vectorstore=store
     )
     # Convert the document store into a langchain toolkit
@@ -42,7 +47,7 @@ if api_key:
         verbose=True
     )
 
-    st.title('Ask me anything about the filing!')
+    st.title('Ask me anything about the filings')
     # Create a text input box for the user
     prompt = st.text_input('Input your prompt here')
 
